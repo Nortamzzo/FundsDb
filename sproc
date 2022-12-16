@@ -1,0 +1,3030 @@
+USE STARCASHprod0002;
+
+DROP PROCEDURE IF EXISTS SpIdentityAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpIdentityAdd`(
+/*
+Summary
+	Add new identity to Identity
+History
+	11/25/22	Created
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO
+		Identity
+        (
+			IdentityId,
+            Description
+		)
+        VALUES
+        (
+			_ActiveId,
+            _Description
+		);
+	SET @IdentityId = last_insert_id();
+    
+    COMMIT;
+    SELECT
+		IdentityId,
+        Description,
+        Created,
+        Updated
+	FROM
+		Identity
+	WHERE
+		IdentityId = @IdentityId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpIdentityGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpIdentityGetById`(
+/*
+Summary
+	Get identity
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+	SELECT
+		IdentityId,
+        Description,
+        Created,
+        Updated
+	FROM
+		Identity
+	WHERE
+		IdentityId = _IdentityId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpUserProfileAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpUserProfileAdd`(
+/*
+Summary
+	Add user profile
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Email VARCHAR(100),
+    IN _Username VARCHAR(35),
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO
+		UserProfile
+        (
+			IdentityId,
+			ActiveId,
+			Email,
+			Username,
+            Description
+		)
+        VALUES
+        (
+			_IdentityId,
+            _IdentityId,
+            _Email,
+            _Username,
+            _Description
+		);
+	SET @UserProfileId = last_insert_id();
+    
+    COMMIT;
+    SELECT
+		UserProfileId,
+        IdentityId,
+        ActiveId,
+        Email,
+        Username,
+        Description,
+        Created,
+        Updated
+	FROM
+		UserProfile
+	WHERE
+		UserProfileId = @UserProfileId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPersonAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPersonAdd`(
+/*
+Summary
+	Add person to identity
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _FirstName VARCHAR(35),
+    IN _LastName VARCHAR(35)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO
+		Person
+        (
+			IdentityId,
+            FirstName,
+            LastName
+		)
+        VALUES
+        (
+			_IdentityId,
+            _FirstName,
+            _LastName
+		);
+	SET @PersonId = last_insert_id();
+    
+    COMMIT;
+    SELECT
+		PersonId,
+		IdentityId,
+        FirstName,
+        LastName,
+		Enabled,
+        Created,
+        Updated
+	FROM
+		Person
+	WHERE
+		PersonId = @PersonId;
+        
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkPhoneTypeGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkPhoneTypeGet`(
+/*
+Summary
+	Get lk phone types
+History
+	11/26/22	Create
+*/)
+BEGIN
+    SELECT
+		LkPhoneTypeId,
+        Title
+	FROM
+		LkPhoneType;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPhoneGetByActiveId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPhoneGetByActiveId`(
+/*
+Summary
+	Get phones for active id
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		PhoneId,
+		IdentityId,
+		PhoneNumber,
+		LkPhoneTypeId,
+		Enabled,
+		Created,
+		Updated
+	FROM
+		Phone
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPhoneGetByActiveId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPhoneGetByActiveId`(
+/*
+Summary
+	Get phones for active id
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		PhoneId,
+		IdentityId,
+		PhoneNumber,
+		LkPhoneTypeId,
+		Enabled,
+		Created,
+		Updated
+	FROM
+		Phone
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPhoneAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPhoneAdd`(
+/*
+Summary
+	Add phone to identity
+History
+	11/26/22	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _PhoneNumber VARCHAR(15),
+    IN _LkPhoneTypeId INT,
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO
+		Phone
+        (
+			IdentityId,
+            PhoneNumber,
+            LkPhoneTypeId,
+            Description
+		)
+        VALUES
+        (
+			_ActiveId,
+            _PhoneNumber,
+            _LkPhoneTypeId,
+            _Description
+		);
+	SET @PhoneId = last_insert_id();
+    
+    COMMIT;
+    
+    SELECT
+		PhoneId,
+		IdentityId,
+		PhoneNumber,
+		LkPhoneTypeId,
+		Enabled,
+		Created,
+		Updated
+	FROM
+		Phone
+	WHERE
+		PhoneId = @PhoneId;
+		
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkStateGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkStateGet`(
+/*
+Summary
+	Get lk address state
+History
+	11/26/22	Create
+*/)
+BEGIN
+    SELECT
+		LkStateId,
+        Title,
+        DisplayName
+	FROM
+		LkState;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationAdd`(
+/*
+Summary
+	Add IdentityId to Association
+    Add creating identity to association member
+    Add all association privileges to association member
+    Return Association
+History
+	11/22/22	Create
+	11/25/22	Add AssociationMember changes
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    SET @AsscIdentityId = UUID();
+    
+    INSERT INTO
+		Identity
+        (
+			IdentityId, 
+            Description
+		)
+        VALUES
+        (
+			@AsscIdentityId, 
+            "Association"
+		);
+	
+    INSERT INTO
+		Association
+        (
+			IdentityId,
+            Title,
+            DisplayName,
+            Description
+		)
+        VALUES
+        (
+			@AsscIdentityId,
+            _Title,
+            _DisplayName,
+            _Description
+		);
+	SET @AssociationId = last_insert_id();
+    
+    INSERT INTO
+		AssociationMember
+        (
+			AssociationId,
+            IdentityId,
+            CanRead,
+            CanUpdate,
+            CanCreate,
+            CanDelete,
+            CanInvite,
+            CanRemove
+		)
+        VALUES
+        (
+			@AssociationId,
+            _IdentityId,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+		);
+    
+    COMMIT;
+    SELECT
+		AssociationId, 
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Created,
+        Updated
+	FROM
+		Association
+	WHERE
+		AssociationId = @AssociationId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationGet`(
+/*
+Summary
+	Get Associations for identity
+History
+	11/21/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		a.AssociationId,
+        a.IdentityId,
+        a.Title,
+        a.DisplayName,
+        a.Description,
+        a.Created,
+        a.Updated
+	FROM
+		Association a
+	JOIN
+		AssociationMember am
+        ON a.AssociationId = am.AssociationId
+	WHERE
+		am.IdentityId = _IdentityId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationGetByIdentityId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationGetByIdentityId`(
+/*
+Summary
+	Get Associations for identity
+History
+	11/21/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		AssociationId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Created,
+        Updated
+	FROM
+		Association
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationMemberGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationMemberGet`(
+/*
+Summary
+	Get AssociationMembers for association identity (activeId)
+History
+	11/21/22	Create
+    11/25/22	Added AssociationMember changes
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		am.AssociationMemberId,
+        am.AssociationId,
+        am.IdentityId,
+        am.CanRead,
+        am.CanUpdate,
+        am.CanCreate,
+        am.CanDelete,
+        am.CanInvite,
+        am.CanRemove,
+        am.Created,
+        am.Updated
+	FROM
+		AssociationMember am
+	JOIN
+		Association a
+        ON am.AssociationId = a.AssociationId
+	WHERE
+		a.IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationMemberGetByIdentityId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationMemberGetByIdentityId`(
+/*
+Summary
+	Get AssociationMembers for association identity (activeId)
+History
+	11/21/22	Create
+    11/25/22	Added AssociationMember changes
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		am.AssociationMemberId,
+        am.AssociationId,
+        am.IdentityId,
+        am.CanRead,
+        am.CanUpdate,
+        am.CanCreate,
+        am.CanDelete,
+        am.CanInvite,
+        am.CanRemove,
+        am.Created,
+        am.Updated
+	FROM
+		AssociationMember am
+	JOIN
+		Association a
+        ON am.AssociationId = a.AssociationId
+	WHERE
+		a.IdentityId = _ActiveId
+        AND
+			am.IdentityId = _IdentityId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpUserProfileUpdateAssociation;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpUserProfileUpdateAssociation`(
+/*
+Summary
+	Update UserProfile.ActiveId and AssocationId to new association
+History
+	11/21/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    SET @UserProfileId = 
+    (
+		SELECT
+			UserProfileId
+		FROM
+			UserProfile
+		WHERE
+			IdentityId = _IdentityId
+    );
+    
+    UPDATE
+		UserProfile
+	SET
+		ActiveId = _ActiveId
+	WHERE
+		IdentityId = _IdentityId;
+    
+    COMMIT;
+    SELECT
+		UserProfileId,
+        IdentityId,
+        ActiveId,
+        Email,
+        Username,
+        Description,
+        Created,
+        Updated
+	FROM
+		UserProfile
+	WHERE
+		UserProfileId = @UserProfileId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationInviteAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationInviteAdd`(
+/*
+Summary
+	Send association invite to member
+History
+	11/23/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _ReceiverEmail VARCHAR(100),
+    IN _Message VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    SET @ReceiverIdentityId = 
+		(
+			SELECT
+				IdentityId
+			FROM
+				UserProfile
+			WHERE
+				Email = _ReceiverEmail			
+        );
+    
+    SET @AssociationId = 
+		(
+			SELECT
+				AssociationId
+			FROM
+				Association
+			WHERE
+				IdentityId = _ActiveId
+        );
+    
+    INSERT INTO
+		AssociationInvite
+        (
+			AssociationId,
+            SenderIdentityId,
+            ReceiverIdentityId,
+            Message
+		)
+        VALUES
+        (
+			@AssociationId,
+			_IdentityId,
+            @ReceiverIdentityId,
+            _Message
+        );
+        SET @AssociationInviteId = last_insert_id();
+    
+    COMMIT;
+    SELECT
+		AssociationInviteId,
+        AssociationId,
+		SenderIdentityId,
+		ReceiverIdentityId,
+		Message,
+		Accepted,
+		Created,
+		Updated
+	FROM
+		AssociationInvite
+	WHERE
+		AssociationInviteId = @AssociationInviteId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpVwAssociationInviteGetSender;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpVwAssociationInviteGetSender`(
+/*
+Summary
+	Get association member invites from sender
+History
+	11/23/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		AssociationInviteId,
+		SenderIdentityId,
+		SenderAssociationIdentityId,
+		ReceiverName,
+		ReceiverEmail,
+		Message,
+		Accepted,
+		Created,
+		Updated
+	FROM
+		AssociationInvite
+	WHERE
+		SenderIdentityId = _IdentityId
+        AND
+			SenderAssociationIdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationInviteGetReceiver;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationInviteGetReceiver`(
+/*
+Summary
+	Get association member invites for receiver
+History
+	11/23/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		aAssociationId,
+		aIdentityId,
+		aTitle,
+		aDisplayName,
+		aDescription,
+		aCreated,
+		aUpdated,
+
+        aiAssociationInviteId,
+        aiAssociationId,
+		aiSenderIdentityId,
+		aiReceiverIdentityId,
+		aiMessage,
+		aiAccepted,
+		aiCreated,
+		aiUpdated,
+			
+		upsUserProfileId,
+		upsIdentityId,
+		upsActiveId,
+		upsEmail,
+		upsUsername,
+		upsDescription,
+		upsCreated,
+		upsUpdated,
+				
+		uprUserProfileId,
+		uprIdentityId,
+		uprActiveId,
+		uprEmail,
+		uprUsername,
+		uprDescription,
+		uprCreated,
+		uprUpdated
+	FROM
+		VwAssociationInvite
+	WHERE
+		aiReceiverIdentityId = _IdentityId
+        AND
+			aiAccepted = false;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkAccountTypeGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkAccountTypeGet`(
+/*
+Summary
+	Get LkAccountTypes
+History
+	11/19/22:	Create
+*/
+	)
+BEGIN
+    SELECT
+		LkAccountTypeId,
+        Title
+	FROM
+		LkAccountType;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkAccountTypeGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkAccountTypeGetById`(
+	IN _LkAccountTypeId INT
+/*
+Summary
+	Get LkAccountType by id
+History
+	11/26/22:	Create
+*/
+	)
+BEGIN
+    SELECT
+		LkAccountTypeId,
+        Title
+	FROM
+		LkAccountType
+	WHERE
+		LkAccountTypeId = _LkAccountTypeId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountAdd`(
+/*
+Summary
+	Insert new amount into Amount
+    Insert new account into Account
+    Insert account create transaction
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _AmountValue DECIMAL(13,2),
+    IN _StartDate DATE,
+    IN _ReconcileDate DATE,
+    IN _LkAccountTypeId INT,
+    IN _CreditLimitValue DECIMAL(13,2)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+        
+    INSERT INTO 
+		Amount
+		(
+			IdentityId,
+			AmountValue,
+            Description
+		)
+	VALUE
+        (
+			_ActiveId,
+			_AmountValue,
+            CONCAT(_DisplayName, " starting amount")
+        );
+    SET @AmountId = last_insert_id();
+    
+    INSERT INTO 
+		Account
+		(
+			IdentityId,
+            Title,
+            DisplayName,
+            Description,
+            AmountId,
+            StartDate,
+            ReconcileDate,
+            LkAccountTypeId
+		)
+	VALUES
+        (
+			_ActiveId,
+            _Title,
+            _DisplayName,
+            _Description,
+            @AmountId,
+            _StartDate,
+            _ReconcileDate,
+            _LkAccountTypeId
+        );
+    SET @AccountId = last_insert_id();
+    
+    CASE
+		WHEN (_LkAccountTypeId = 1) 
+			THEN 
+				SET @CategoryId = 1;
+                SET @SubcategoryId = 1;
+		WHEN (_LkAccountTypeId = 2) 
+			THEN 
+				SET @CategoryId = 1;
+                SET @SubcategoryId = 2;
+		WHEN (_LkAccountTypeId = 3) 
+			THEN 
+				SET @CategoryId = 2;
+                SET @SubcategoryId = 3;
+		WHEN (_LkAccountTypeId = 4) 
+			THEN 
+				SET @CategoryId = 2;
+                SET @SubcategoryId = 4;
+		WHEN (_LkAccountTypeId = 5) 
+			THEN 
+				SET @CategoryId = 2;
+                SET @SubcategoryId = 5;
+	END CASE;
+    
+    INSERT INTO Transaction
+		(
+			IdentityId,
+			TransactionDate, 
+            AmountId, 
+            AccountId,
+            LocationId,
+            CategoryId, 
+            SubcategoryId, 
+            Description
+		)
+		VALUES
+		(
+			_ActiveId,
+			_StartDate,
+            @AmountId,
+            @AccountId,
+            1, -- System Location Id
+            @CategoryId, -- System new account category
+            @SubcategoryId, -- System new account subcategory
+            "New account setup"
+		);
+        
+	IF (_CreditLimitValue IS NOT NULL)
+		THEN
+			INSERT INTO
+				Amount
+                (
+					IdentityId,
+					AmountValue,
+                    Description
+				)
+                VALUES
+                (
+					_ActiveId,
+                    _CreditLimitValue,
+                    CONCAT("Credit Limit for ", _Title)
+                );
+			SET @CreditAmountId = last_insert_id();
+			
+			INSERT INTO
+				CreditLimit
+                (
+					AccountId,
+                    AmountId,
+                    Description
+                )
+                VALUES
+                (
+					@AccountId,
+                    @CreditAmountId,
+                    CONCAT(_Title, " credit limit")
+                );
+	END IF;
+    
+    COMMIT;
+    SELECT
+		AccountId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        AmountId,
+        StartDate,
+        ReconcileDate,
+        LkAccountTypeId,
+        Track,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Account
+	WHERE
+		AccountId = @AccountId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountGet`(
+/*
+Summary
+	Get Account by account id
+History
+	11/24/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		AccountId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        AmountId,
+        StartDate,
+        ReconcileDate,
+        LkAccountTypeId,
+        Track,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Account
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountGetViewShort;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountGetViewShort`(
+/*
+Summary
+	Get Account view short 
+History
+	12/13/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		AccountId,
+		IdentityId,
+		Title,
+		DisplayName,
+		Description,
+        AmountId,
+		StartDate,
+		ReconcileDate,
+        LkAccountTypeId,
+		Track,
+		Enabled,
+		Created,
+        CreatedBy,
+		Updated,
+        UpdatedBy,
+        Balance,
+        Future,
+        ThisMonth
+	FROM
+		VwAccountShort
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountGetViewLong;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountGetViewLong`(
+/*
+Summary
+	Get Account by account id
+History
+	11/24/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		AccountId,
+		IdentityId,
+		Title,
+		DisplayName,
+		Description,
+        AmountId,
+		StartDate,
+		ReconcileDate,
+        LkAccountTypeId,
+		Track,
+		Enabled,
+		Created,
+        CreatedBy,
+		Updated,
+        UpdatedBy,
+        LkAccountTypeTitle,
+        AccountAmountValue,
+		AccountAmountDescription,
+		AccountAmountCreated,
+		AccountAmountUpdated,
+		CreditLimitId,
+        CreditLimitDescription,
+		CreditLimitAmountId,
+        CreditLimitCreated,
+        CreditLimitUpdated,
+		CreditLimitAmountValue,
+        CreditLimitAmountDescription,
+		CreditLimitAmountCreated,
+        CreditLimitAmountUpdated,
+        Balance,
+        Future,
+        ThisMonth
+	FROM
+		VwAccountLong
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountGetById`(
+/*
+Summary
+	Get Account by account id
+History
+	11/24/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _AccountId INT
+    )
+BEGIN
+    SELECT
+		AccountId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        AmountId,
+        StartDate,
+        ReconcileDate,
+        LkAccountTypeId,
+        Track,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Account
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			AccountId = _AccountId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountUpdate`(
+/*
+Summary
+	Update existing account
+History
+	11/25/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _AccountId INT,
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _AmountValue DECIMAL(13,2),
+    IN _StartDate DATE,
+    IN _ReconcileDate DATE,
+    IN _LkAccountTypeId INT,
+    IN _Track BOOL,
+    IN _Enabled BOOL,
+    IN _CreditLimit DECIMAL(13,2)
+    )
+BEGIN
+	DECLARE Log TEXT;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+            
+    UPDATE
+		Account
+	SET
+		Title = IFNULL(_Title, Title),
+		DisplayName = IFNULL(_DisplayName, DisplayName),
+		Description = IFNULL(_Description, Description),
+		StartDate = IFNULL(_StartDate, StartDate),
+		ReconcileDate = IFNULL(_ReconcileDate, ReconcileDate),
+		LkAccountTypeId = IFNULL(_LkAccountTypeId, LkAccountTypeId),
+		Track = IFNULL(_Track, Track),
+		Enabled = IFNULL(_Enabled, Enabled)
+	WHERE
+		AccountId = _AccountId;
+        
+	CASE
+		WHEN _AmountValue IS NOT NULL THEN
+			SET @AmountId = 
+				(
+					SELECT
+						am.AmountId
+					FROM
+						Amount am
+					JOIN
+						Account a
+						ON am.AmountId = a.AmountId
+				);
+			UPDATE
+				Amount
+			SET
+				AmountValue = _AmountValue
+			WHERE
+				AmountId = @Amountid;
+		WHEN _CreditLimitId IS NOT NULL THEN
+			SET @CreditLimitId = 
+				(
+					SELECT
+						c.CreditLimitId
+					FROM
+						CreditLimit c
+					JOIN
+						Account a
+                        ON c.AccountId = a.AccountId
+					WHERE
+						a.AccountId = _AccountId
+                );
+			SET @CreditLimitAmountId =
+				(
+					SELECT
+						am.AmountId
+					FROM
+						Amount am
+					JOIN
+						CreditLimit c
+						ON am.AmountId = c.AmountId
+					WHERE
+						c.CreditLimitId = @CreditLimitId
+                );
+			UPDATE
+				Amount
+			SET
+				AmountValue = _CreditLimitAmount
+			WHERE
+				AmountId = @CreditLimitAmountId;
+	END CASE;
+    
+    COMMIT;
+    SELECT
+		AccountId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        AmountId,
+        StartDate,
+        ReconcileDate,
+        LkAccountTypeId,
+        Track,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Account
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			AccountId = _AccountId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAccountGetBalanceById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAccountGetBalanceById`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _AccountId INT
+    )
+BEGIN
+    SELECT 
+		a.AccountId,
+		(
+			SELECT SUM(aa.AmountValue)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+			WHERE AccountId = a.AccountId
+			AND tt.TransactionDate <= curdate()
+		) AS 'Balance',
+        IFNULL(
+			(
+				SELECT SUM(aa.AmountValue)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				WHERE tt.AccountId = a.AccountId
+			), 
+				(
+					SELECT SUM(aa.AmountValue)
+					FROM Transaction tt
+					JOIN Amount aa ON tt.AmountId = aa.AmountId
+					WHERE AccountId = a.AccountId
+				)) AS 'Future',
+		IFNULL(
+			(
+				SELECT SUM(aa.AmountValue)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				WHERE tt.AccountId = a.AccountId
+				AND MONTH(tt.TransactionDate) = MONTH(curdate())
+			), 0) AS 'ThisMonth',
+        IFNULL(
+			(
+				SELECT SUM(aa.AmountValue)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				WHERE tt.AccountId = a.AccountId
+				AND MONTH(tt.TransactionDate) = MONTH(curdate() - INTERVAL 1 MONTH)
+			), 0) AS 'LastMonth'
+	FROM
+		Account a
+	LEFT JOIN
+		Amount am
+		ON a.AmountId = am.AmountId
+	LEFT JOIN 
+		LkAccountType aty 
+		ON a.LkAccountTypeId = aty.LkAccountTypeId
+	LEFT JOIN 
+		Transaction t 
+		ON a.AccountId = t.AccountId
+	WHERE
+		a.AccountId = _AccountId
+	GROUP BY
+		a.AccountId
+	ORDER BY
+		a.Title ASC;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryAdd`(
+/*
+Summary
+	Insert new category into EntityCategory
+    Returns new EntityCategory
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _LkFlowId INT
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO 
+		Category
+		(
+			IdentityId, 
+            Title, 
+            DisplayName, 
+            Description, 
+            LkFlowId
+		)
+	VALUES
+        (
+			_ActiveId,
+			_Title,
+            _DisplayName,
+            _Description,
+            _LkFlowId
+        );
+    SET @CategoryId = last_insert_id();
+    
+    COMMIT;
+    SELECT
+		CategoryId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Category
+	WHERE
+		CategoryId = @CategoryId;
+        
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryUpdate`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT,
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _LkFlowId INT,
+    IN _Enabled BOOL
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    UPDATE
+		Category
+	SET
+		Title = IFNULL(_Title, Title),
+        DisplayName = IFNULL(_DisplayName, DisplayName),
+        Description = IFNULL(_Description, Description),
+        LkFlowId = IFNULL(_LkFlowId, LkFlowId),
+        Enabled = IFNULL(_Enabled, Enabled)
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			CategoryId = _CategoryId;
+    
+    COMMIT;
+    SELECT
+		CategoryId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Category
+	WHERE
+		CategoryId = _CategoryId;
+        
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryGetById`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT
+    )
+BEGIN
+    SELECT
+		CategoryId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Category
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			CategoryId = _CategoryId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryGet`(
+/*
+Summary
+	Get VwCategory for EntityId
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		CategoryId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Category
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryGetView;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryGetView`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		CategoryId,
+		IdentityId,
+		Title,
+		DisplayName,
+		Description,
+		LkFlowId,
+		LkFlowTitle,
+		LkFlowRate,
+		Enabled,
+		Created,
+		Updated,
+        ThisMonth
+	FROM
+		VwCategory
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkFlowGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkFlowGet`(
+/*
+Summary
+	Get LkFlow
+History
+	11/21/22:	Create
+*/
+    )
+BEGIN
+    SELECT
+		LkFlowId,
+        Title,
+        Rate
+	FROM
+		LkFlow;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLkFlowGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLkFlowGetById`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _LkFlowId INT
+    )
+BEGIN
+    SELECT
+		LkFlowId,
+        Title,
+        Rate
+	FROM
+		LkFlow
+	WHERE
+		LkFlowId = _LkFlowId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryAdd`(
+/*
+Summary
+	Insert new subcategory into EntitySubcategory
+    Returns new EntitySubcategory
+History
+	11/19/22:	Create
+    12/13/22:	Add LkFlowId and OverrideLkFlowId sections
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT,
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _LkFlowId INT,
+    IN _OverrideLkFlowId INT
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+	SET @FlowId = 
+		(
+			SELECT
+				LkFlowId
+			FROM
+				Category
+			WHERE
+				CategoryId = _CategoryId
+		);
+    
+    INSERT INTO 
+		Subcategory
+		(
+			IdentityId, 
+            CategoryId, 
+            Title, 
+            DisplayName, 
+            Description,
+            LkFlowId,
+            OverrideLkFlowId
+		)
+	VALUES
+        (
+			_ActiveId,
+            _CategoryId,
+			_Title,
+            _DisplayName,
+            _Description,
+            @FlowId,
+            IFNULL(_OverrideLkFlowId, false)
+        );
+    SET @SubcategoryId = last_insert_id();
+		
+    COMMIT;
+    SELECT
+		SubcategoryId,
+        IdentityId,
+        CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Subcategory
+	WHERE
+		SubcategoryId = @SubcategoryId;
+        
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGetById`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _SubcategoryId INT
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+        CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Subcategory
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			SubcategoryId = _SubcategoryId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGet`(
+/*
+Summary
+	Get VwSubcategory for EntityId
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+        CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Subcategory
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGetViewShort;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGetViewShort`(
+/*
+Summary
+	Get VwSubcategory for EntityId
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+		CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        CreatedBy,
+        Updated,
+        UpdatedBy,
+        ThisMonth
+	FROM
+		VwSubcategoryShort
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGetViewLong;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGetViewLong`(
+/*
+Summary
+	Get VwSubcategory for EntityId
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+		CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        CreatedBy,
+        Updated,
+        UpdatedBy,
+		CategoryTitle,
+        CategoryDisplayName,
+        CategoryDescription,
+        CategoryLkFlowId,
+        CategoryEnabled,
+        CategoryCreated,
+        CategoryCreatedBy,
+        CategoryUpdated,
+        CategoryUpdatedBy,
+		LkFlowTitle,
+        LkFlowRate,
+        ThisMonth
+	FROM
+		VwSubcategoryLong
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGetViewByCategoryId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGetViewByCategoryId`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+		CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        CreatedBy,
+        Updated,
+        UpdatedBy,
+		CategoryTitle,
+        CategoryDisplayName,
+        CategoryDescription,
+        CategoryLkFlowId,
+        CategoryEnabled,
+        CategoryCreated,
+        CategoryCreatedBy,
+        CategoryUpdated,
+        CategoryUpdatedBy,
+		LkFlowTitle,
+        LkFlowRate,
+        ThisMonth
+	FROM
+		VwSubcategoryLong
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			CategoryId = _Categoryid;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryGetByCategoryId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryGetByCategoryId`(
+/*
+Summary
+	Get VwSubcategory for EntityId
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT
+    )
+BEGIN
+    SELECT
+		SubcategoryId,
+        IdentityId,
+        CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Subcategory
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			CategoryId = _CategoryId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLocationAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLocationAdd`(
+/*
+Summary
+	Insert new location into EntityLocation
+    Insert new LkEntityLocation
+    Returns new EntityLocation
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO 
+		Location
+		(
+			IdentityId, 
+            Title, 
+            DisplayName, 
+            Description
+		)
+	VALUES
+        (
+			_ActiveId,
+            _Title,
+            _DisplayName,
+            _Description
+		);
+	SET @LocationId = last_insert_id();
+    
+	SET @LocationEntityUUID = UUID();
+        
+    COMMIT;
+    SELECT
+		LocationId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Location
+	WHERE
+		LocationId = @LocationId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLocationGetViewById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLocationGetViewById`(
+/*
+Summary
+	Get Location by id
+History
+	11/24/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _LocationId INT
+    )
+BEGIN
+    SELECT
+		LocationId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Enabled,
+        Updated,
+        Created,
+        ThisMonth
+	FROM
+		VwLocation
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			LocationId = _LocationId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLocationGetView;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLocationGetView`(
+/*
+Summary
+	Get VwLocation for identityId
+History
+	11/21/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		LocationId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Enabled,
+        Updated,
+        Created,
+        ThisMonth
+	FROM
+		VwLocation
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAmountGetById;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAmountGetById`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _AmountId INT
+    )
+BEGIN
+    SELECT
+		AmountId,
+        IdentityId,
+        AmountValue,
+        Description,
+        Created,
+        Updated
+	FROM
+		Amount
+	WHERE
+		IdentityId = _ActiveId
+        AND
+			AmountId = _AmountId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpTransactionAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpTransactionAdd`(
+/*
+Summary
+	Insert amount
+    Insert transaction
+    If transaction date < account created date, add transaction amount to account amout
+    Return EntityTransaction
+History
+	11/19/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _TransactionDate DATE,
+    IN _AmountValue DECIMAL(13,2),
+    IN _AccountId INT,
+    IN _LocationId INT,
+    IN _CategoryId INT,
+    IN _SubcategoryId INT,
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO 
+		Amount
+		(
+			AmountValue
+		)
+	VALUE
+		(
+			_AmountValue
+		);
+	SET @AmountId = last_insert_id();
+    
+    INSERT INTO Transaction
+		(
+			IdentityId, 
+            TransactionDate, 
+            AmountId, 
+            AccountId, 
+            LocationId, 
+            CategoryId, 
+            SubcategoryId, 
+            Description
+		)
+        VALUES
+		(
+			_ActiveId,
+            _TransactionDate,
+            @AmountId,
+            _AccountId,
+            _LocationId,
+            _CategoryId,
+            _SubcategoryId,
+            _Description
+        );
+    SET @TransactionId = last_insert_id();
+    
+    SET @ReconcileDate = 
+		(
+			SELECT
+				ReconcileDate
+			FROM
+				Account
+			WHERE
+				AccountId = _AccountId
+		);
+    
+    IF (_TransactionDate < @ReconcileDat) 
+		THEN
+			SET @AmountId = 
+				(
+					SELECT
+						AmountId
+					FROM
+						Account
+					WHERE
+						AccountId = _AccountId
+				);
+			SET @AmountValueOriginal = 
+				(
+					SELECT
+						am.AmountValue
+					FROM
+						Amount am
+					JOIN
+						Account a
+						ON am.AmountId = a.AmountId
+					WHERE
+						a.AccountId = _AccountId
+				);
+			SET @FlowRate =
+				(
+					SELECT
+						l.Rate
+					FROM
+						LkFlow l
+					JOIN
+						Category c
+						ON l.LkFlowId = c.LkFlowId
+					WHERE
+						c.CategoryId = _CategoryId
+				);
+			SET @NewAmountValue = (@AmountValueOriginal - (_AmountValue * @FlowRate));
+			UPDATE 
+				Amount
+			SET
+				AmountValue = @NewAmountValue
+				
+			WHERE
+				AmountId = @AmountId;
+	END IF;
+    
+    COMMIT;
+    SELECT
+		TransactionId,
+        IdentityId,
+        TransactionDate,
+        AmountId,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Transaction
+	WHERE
+		TransactionId = @TransactionId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpTransactionUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpTransactionUpdate`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _TransactionId INT,
+    IN _TransactionDate DATE,
+    IN _AmountId INT,
+    IN _AmountValue DECIMAL(13,2),
+    IN _AccountId INT,
+    IN _LocationId INT,
+    IN _CategoryId INT,
+    IN _SubcategoryId INT,
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    IF (_AmountValue IS NOT NULL) THEN
+		UPDATE 
+			Amount
+		SET
+			AmountValue = _AmountValue
+		WHERE
+			AmountId = _AmountId;
+	END IF;
+    
+    UPDATE
+		Transaction
+	SET
+		TransactionDate = IFNULL(_TransactionDate, TransactionDate),
+        AccountId = IFNULL(_AccountId, AccountId),
+        LocationId = IFNULL(_LocationId, LocationId),
+        CategoryId = IFNULL(_CategoryId, CategoryId),
+        SubcategoryId = IFNULL(_SubcategoryId, SubcategoryId),
+        Description = IFNULL(_Description, Description)
+	WHERE
+		TransactionId = _TransactionId
+        AND
+			IdentityId = _ActiveId;
+            
+    COMMIT;
+    SELECT
+		TransactionId,
+        IdentityId,
+        TransactionDate,
+        AmountId,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Transaction
+	WHERE
+		TransactionId = _TransactionId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpTransactionGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpTransactionGet`(
+/*
+Summary
+	Get VwTransaction for EntityId
+History
+	11/19/22:	Create
+    11/24/22:	Remove view, get transaction table
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		TransactionId,
+        IdentityId,
+        TransactionDate,
+        AmountId,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Transaction
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpTransactionGetView;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpTransactionGetView`(
+/*
+Summary
+	Get VwTransaction for EntityId
+History
+	11/19/22:	Create
+    11/24/22:	Remove view, get transaction table
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		TransactionId,
+        IdentityId,
+        TransactionDate,
+		AmountId,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated,
+        Balance,
+        Future,
+        AccountTitle,
+        AccountDisplayName,
+        LkAccountTypeId,
+        LkAccountTypeTitle,
+        AmountValue,
+        AmountDescription,
+        LocationTitle,
+        LocationDisplayName,
+		CategoryTitle,
+        CategoryDisplayName,
+		CategoryLkFlowId,
+		SubcategoryTitle,
+        SubcategoryDisplayName,
+		SubcategoryLkFlowId,
+		LkFlowTitle,
+        LkFlowRate,
+        OverrideLkFlowId
+	FROM
+		VwTransaction
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPresetAdd;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPresetAdd`(
+/*
+Summary
+	Add Preset Transaction
+History
+	11/27/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _AmountValue DECIMAL(13,2),
+    IN _AccountId INT,
+    IN _LocationId INT,
+    IN _CategoryId INT,
+    IN _SubcategoryId INT,
+    IN _Description VARCHAR(255)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    INSERT INTO Preset
+		(
+			IdentityId,
+            Title,
+            DisplayName,
+            AmountValue, 
+            AccountId, 
+            LocationId, 
+            CategoryId, 
+            SubcategoryId, 
+            Description,
+            CreatedBy,
+            UpdatedBy
+		)
+        VALUES
+		(
+			_ActiveId,
+            _Title,
+            _DisplayName,
+            _AmountValue,
+            _AccountId,
+            _LocationId,
+            _CategoryId,
+            _SubcategoryId,
+            _Description,
+            _IdentityId,
+            _IdentityId
+        );
+    SET @PresetId = last_insert_id();
+    
+    COMMIT;
+    
+    SELECT
+		PresetId,
+        IdentityId,
+        Title,
+        DisplayName,
+        AmountValue,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Preset
+	WHERE
+		PresetId = @PresetId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPresetGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPresetGet`(
+/*
+Summary
+	Get VwTransaction for EntityId
+History
+	11/19/22:	Create
+    11/24/22:	Remove view, get transaction table
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		PresetId,
+        IdentityId,
+        Title,
+        DisplayName,
+        AmountValue,
+        AccountId,
+        LocationId,
+        CategoryId,
+        SubcategoryId,
+        Description,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Preset
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPresetGetView;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPresetGetView`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		PresetId,
+		IdentityId,
+		Title,
+		DisplayName,
+		AmountValue,
+		AccountId,
+        AccountDisplayName,
+		LocationId,
+        LocationDisplayName,
+		CategoryId,
+        CategoryDisplayName,
+		SubcategoryId,
+        SubcategoryDisplayName,
+		Description,
+		Enabled,
+		Created,
+		CreatedBy,
+        CreatedByName,
+        Updated,
+		UpdatedBy,
+        UpdatedByName
+	FROM
+		VwPreset
+	WHERE
+		IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpTransactionGetWorth;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpTransactionGetWorth`(
+/*
+Summary
+	Get new worth for entity
+History
+	11/19/22: Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+	SELECT 
+	SUM(
+		CASE 
+			WHEN ac.LkAccountTypeId = 1 THEN am.AmountValue * l.Rate
+			WHEN ac.LkAccountTypeId = 2 THEN am.AmountValue * l.Rate
+            WHEN ac.LkAccountTypeId = 3 THEN am.AmountValue * l.Rate
+            WHEN ac.LkAccountTypeId = 4 THEN am.AmountValue * l.Rate
+            WHEN ac.LkAccountTypeId = 5 THEN am.AmountValue * l.Rate
+        END
+        ) AS 'NetWorth',
+	SUM(
+		CASE 
+			WHEN ac.LkAccountTypeId = 1 THEN am.AmountValue * l.Rate
+			WHEN ac.LkAccountTypeId = 2 THEN am.AmountValue * l.Rate
+        END
+        ) AS 'Assets',
+	SUM(
+		CASE 
+            WHEN ac.LkAccountTypeId = 3 THEN am.AmountValue * l.Rate
+            WHEN ac.LkAccountTypeId = 4 THEN am.AmountValue * l.Rate
+            WHEN ac.LkAccountTypeId = 5 THEN am.AmountValue * l.Rate
+        END
+        ) AS 'Liabilities'
+	FROM 
+		Transaction t
+	LEFT JOIN
+		Account ac
+        ON t.AccountId = ac.AccountId
+	LEFT JOIN
+		Subcategory s
+        ON t.SubcategoryId = s.Subcategoryid
+	LEFT JOIN
+		LkFlow l
+        ON s.LkFlowId = l.LkFlowId
+	LEFT JOIN
+		Amount am
+        ON t.AmountId = am.AmountId
+	WHERE
+		t.IdentityId = _ActiveId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpUserProfileGet;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpUserProfileGet`(
+/*
+Summary
+	Get UserProfile for identity
+History
+	11/21/22: Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    SELECT
+		UserProfileId,
+        IdentityId,
+        ActiveId,
+        Email,
+        Username,
+        Description,
+        Created,
+        Updated
+	FROM
+		UserProfile
+	WHERE
+		IdentityId = _IdentityId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpUserProfileSetActiveEntity;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpUserProfileSetActiveEntity`(
+/*
+Summary
+	Set UserProfile: ActiveEntity
+    Return UserProfile
+History
+	11/21/22: Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _UserProfileId INT
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+	
+    UPDATE 
+		UserProfile
+	SET
+		ActiveId = _ActiveId
+	WHERE
+		UserProfileId = _UserProfileId;
+    
+    COMMIT;
+    SELECT
+		UserProfileId,
+        IdentityId,
+        ActiveId,
+        Email,
+        Username,
+        Description,
+        Created,
+        Updated
+	FROM
+		UserProfile
+	WHERE
+		UserProfileId = _UserProfileId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpPersonGetByIdentityId;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpPersonGetByIdentityId`(
+/*
+Summary
+	Get person by identity id
+History
+	11/23/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+	SELECT
+		PersonId,
+        IdentityId,
+        FirstName,
+        LastName,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Person
+	WHERE
+		IdentityId = _IdentityId;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpAssociationMemberJoin;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpAssociationMemberJoin`(
+/*
+Summary
+	Insert identity into association member
+History
+	12/2/2022: Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _AssociationId INT,
+    IN _AssociationInviteId INT
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    SET @AssociationIdentityId =
+		(
+			SELECT
+				IdentityId
+			FROM
+				Association
+			WHERE
+				IdentityId = _ActiveId
+        );
+        
+	SET @AssociationId =
+		(
+			SELECT
+				AssociationId
+			FROM
+				Association
+			WHERE
+				IdentityId = _ActiveId
+        );
+    
+    CASE
+		WHEN (@AssociationIdentityId = _ActiveId and @AssociationId = _AssociationId)
+			THEN
+				INSERT INTO
+					AssociationMember
+					(
+						AssociationId,
+                        IdentityId
+					)
+					VALUES
+					(
+						_AssociationId,
+                        _IdentityId
+					);
+				SET @AssociationMemberId = last_insert_id();
+                
+				UPDATE
+					AssociationInvite
+				SET
+					Accepted = true
+				WHERE
+					AssociationInviteId = _AssociationInviteId;
+	END CASE;    	
+    
+    COMMIT;
+    SELECT
+		AssociationMemberId,
+		AssociationId,
+		IdentityId,
+		CanRead,
+		CanUpdate,
+		CanCreate,
+		CanDelete,
+		CanInvite,
+		CanRemove,
+		Created,
+		Updated
+	FROM
+		AssociationMember
+	WHERE
+		AssociationMemberId = @AssociationMemberId;
+		
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryMerge;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryMerge`(
+/*
+Summary
+	Merge two subcategories together: source joining target
+    Change transactions and presets to match merge
+    Delete source subcategory
+History
+	12/12/2022: Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CategoryId INT,
+    IN _Target INT,
+    IN _Source INT
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+		UPDATE 
+			Transaction
+		SET
+			SubcategoryId = _Target
+		WHERE
+			SubcategoryId = _Source
+            AND
+				IdentityId = _ActiveId
+			AND
+				CategoryId = _CategoryId
+		;
+        
+        UPDATE 
+			Preset
+		SET
+			SubcategoryId = _Target
+		WHERE
+			SubcategoryId = _Source
+            AND
+				IdentityId = _ActiveId
+			AND
+				CategoryId = _CategoryId
+		;
+        
+		Update
+			Subcategory
+		SET
+			Deleted = true
+		WHERE
+			SubcategoryId = _Source
+			AND
+				IdentityId = _ActiveId
+		;
+		
+    COMMIT;
+    SELECT 1;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpSubcategoryUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpSubcategoryUpdate`(
+/*
+Summary
+	Update subcategory
+History
+	12/12/22: 	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _SubcategoryId INT,
+    IN _CategoryId INT,
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _LkFlowId INT,
+    IN _OverrideLkFlowId BOOL
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+		UPDATE
+			Subcategory
+		SET
+			Title = IFNULL(_Title, Title),
+            CategoryId = IFNULL(_CategoryId, CategoryId),
+			DisplayName = IFNULL(_DisplayName, DisplayName),
+			Description = IFNULL(_Description, Description),
+            LkFlowId = IFNULL(_LkFlowId, LkFlowId),
+            OverrideLkFlowId = IFNULL(_OverrideLkFlowId, OverrideLkFLowId)
+		WHERE
+			SubcategoryId = _SubcategoryId
+            AND
+				IdentityId = _ActiveId
+		;
+    COMMIT;
+    
+    SELECT
+		SubcategoryId,
+        IdentityId,
+        CategoryId,
+        Title,
+        DisplayName,
+        Description,
+        LkFlowId,
+        OverrideLkFlowId,
+        Enabled,
+        Created,
+        Updated
+	FROM
+		Subcategory
+	WHERE
+		SubcategoryId = _SubcategoryId;
+    
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpLocationUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpLocationUpdate`(
+/*
+Summary
+	Update a location
+History
+	12/13/22:	Create
+*/
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _LocationId INT,
+    IN _Title VARCHAR(50),
+    IN _DisplayName VARCHAR(25),
+    IN _Description VARCHAR(255),
+    IN _Enabled BOOLEAN
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+		
+        UPDATE
+			Location
+		SET
+			Title = IFNULL(_Title, Title),
+            DisplayName = IFNULL(_DisplayName, DisplayName),
+            Description = IFNULL(_Description, Description),
+            Enabled = IFNULL(_Enabled, Enabled)
+		WHERE
+			LocationId = _LocationId
+            AND
+				IdentityId = _ActiveId
+		;
+        
+    COMMIT;
+    SELECT
+		LocationId,
+        IdentityId,
+        Title,
+        DisplayName,
+        Description,
+        Enabled,
+        Updated,
+        Created,
+        ThisMonth,
+        LastMonth
+	FROM
+		VwLocation
+	WHERE
+		IdentityId = _ActiveId;
+        
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCategoryAddDefaults;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCategoryAddDefaults`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _Income BOOLEAN,
+    IN _Payments BOOLEAN,
+    IN _Transfers BOOLEAN
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+		CASE
+			WHEN _Income IS NOT NULL THEN
+				INSERT INTO
+					Category
+					(IdentityId, Title, DisplayName, Description, LkFlowId)
+					VALUES
+					(_ActiveId, "Income", "Income", "Funds coming in", 1);
+			WHEN _Payments IS NOT NULL THEN
+				INSERT INTO
+					Category
+					(IdentityId, Title, DisplayName, Description, LkFlowId)
+					VALUES
+					(_ActiveId, "Payments", "Payments made from account to another", "Payments coming from an account are Payments From, Payments coming into an account are Payments To", 2);
+			WHEN _Transfers IS NOT NULL THEN
+				INSERT INTO
+					Category
+					(IdentityId, Title, DisplayName, Description, LkFlowId)
+					VALUES
+					(_ActiveId, "Transfers", "Transfer", "Transfer funds from one account to another", 2);
+		END CASE;
+    
+		
+    COMMIT;
+    
+    SELECT 1;
+END ;;
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS SpCreditLimitUpdate;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SpCreditLimitUpdate`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36),
+    IN _CreditLimitId INT,
+    IN _CreditLimitAmount DECIMAL(13,2)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+	UPDATE
+		Amount
+	SET
+		AmountValue = _CreditLimitAmount
+	WHERE
+		CreditLimitId = _CreditLimitId;
+    
+    COMMIT;
+    SELECT true;
+END ;;
+DELIMITER ;
+
+/*
+Summary
+	
+History
+	
+*/
+/*
+DROP PROCEDURE IF EXISTS xxx;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `xxx`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SHOW ERRORS;
+        ROLLBACK;   
+    END; 
+	START TRANSACTION;
+    
+    COMMIT;
+    
+END ;;
+DELIMITER ;
+*/
+/*
+DROP PROCEDURE IF EXISTS xxx;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `xxx`(
+	IN _IdentityId CHAR(36),
+    IN _ActiveId CHAR(36)
+    )
+BEGIN
+    
+END ;;
+DELIMITER ;
+*/
