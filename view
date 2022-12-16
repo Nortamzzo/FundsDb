@@ -1,0 +1,492 @@
+USE STARCASHprod0002;
+
+/*
+DROP VIEW IF EXISTS xxx;
+CREATE VIEW xxx AS
+
+;
+*/
+
+DROP VIEW IF EXISTS VwAccountShort;
+CREATE VIEW VwAccountShort AS
+	SELECT 
+		-- Account
+		a.AccountId,
+		a.IdentityId,
+		a.Title,
+		a.DisplayName,
+		a.Description,
+		a.AmountId,
+		a.StartDate,
+		a.ReconcileDate,
+		a.LkAccountTypeId,
+		a.Track,
+		a.Enabled,
+		a.Created,
+		a.CreatedBy,
+		a.Updated,
+		a.UpdatedBy,
+		(
+			SELECT SUM(aa.AmountValue * lls.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+			JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+			JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+			WHERE AccountId = a.AccountId
+			AND tt.TransactionDate <= curdate()
+		) AS Balance,
+		IFNULL(
+			(
+				SELECT SUM(aa.AmountValue * lls.Rate)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+				JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+				WHERE tt.AccountId = a.AccountId
+			), 
+				(
+					SELECT SUM(aa.AmountValue * lls.Rate)
+					FROM Transaction tt
+					JOIN Amount aa ON tt.AmountId = aa.AmountId
+					JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+					JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+					WHERE AccountId = a.AccountId
+				)) AS Future,
+		IFNULL(
+			(
+				SELECT SUM(aa.AmountValue * lls.Rate)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+				JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+				WHERE tt.AccountId = a.AccountId
+				AND MONTH(tt.TransactionDate) = MONTH(curdate())
+			), 0) AS ThisMonth
+	FROM
+		Account a
+	LEFT JOIN
+		Amount am
+		ON a.AmountId = am.AmountId
+	LEFT JOIN
+		CreditLimit cl
+		ON a.AccountId = cl.AccountId
+	LEFT JOIN
+		Amount amc
+		ON cl.AmountId = amc.AmountId
+	LEFT JOIN 
+		LkAccountType la
+		ON a.LkAccountTypeId = la.LkAccountTypeId
+	GROUP BY
+		a.AccountId,
+		cl.CreditLimitId
+	ORDER BY
+		a.Title ASC
+;
+
+DROP VIEW IF EXISTS VwAccountLong;
+CREATE VIEW VwAccountLong AS
+	SELECT 
+		a.AccountId,
+		a.IdentityId,
+		a.Title,
+		a.DisplayName,
+		a.Description,
+        a.AmountId,
+		a.StartDate,
+		a.ReconcileDate,
+        a.LkAccountTypeId,
+		a.Track,
+		a.Enabled,
+		a.Created,
+        a.CreatedBy,
+		a.Updated,
+        a.UpdatedBy,
+        
+        la.Title AS LkAccountTypeTitle,
+        
+        am.AmountValue AS AccountAmountValue,
+		am.Description AS AccountAmountDescription,
+		am.Created AS AccountAmountCreated,
+		am.Updated AS AccountAmountUpdated,
+        
+		cl.CreditLimitId,
+        cl.Description AS CreditLimitDescription,
+		cl.AmountId AS CreditLimitAmountId,
+        cl.Created AS CreditLimitCreated,
+        cl.Updated AS CreditLimitUpdated,
+        
+		amc.AmountValue AS CreditLimitAmountValue,
+        amc.Description AS CreditLimitAmountDescription,
+		amc.Created AS CreditLimitAmountCreated,
+        amc.Updated AS CreditLimitAmountUpdated,
+        
+		(
+			SELECT SUM(aa.AmountValue * lls.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+			JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+			JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+			WHERE AccountId = a.AccountId
+			AND tt.TransactionDate <= curdate()
+		) AS Balance,
+		IFNULL(
+			(
+				SELECT SUM(aa.AmountValue * lls.Rate)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+				JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+				WHERE tt.AccountId = a.AccountId
+			), 
+				(
+					SELECT SUM(aa.AmountValue * lls.Rate)
+					FROM Transaction tt
+					JOIN Amount aa ON tt.AmountId = aa.AmountId
+					JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+					JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+					WHERE AccountId = a.AccountId
+				)) AS Future,
+		IFNULL(
+			(
+				SELECT SUM(aa.AmountValue * lls.Rate)
+				FROM Transaction tt
+				JOIN Amount aa ON tt.AmountId = aa.AmountId
+				JOIN Subcategory ss ON tt.SubcategoryId = ss.SubcategoryId
+				JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+				WHERE tt.AccountId = a.AccountId
+				AND MONTH(tt.TransactionDate) = MONTH(curdate())
+			), 0) AS ThisMonth
+	FROM
+		Account a
+	LEFT JOIN
+		Amount am
+		ON a.AmountId = am.AmountId
+	LEFT JOIN
+		CreditLimit cl
+		ON a.AccountId = cl.AccountId
+	LEFT JOIN
+		Amount amc
+		ON cl.AmountId = amc.AmountId
+	LEFT JOIN 
+		LkAccountType la
+		ON a.LkAccountTypeId = la.LkAccountTypeId
+	GROUP BY
+		a.AccountId,
+		cl.CreditLimitId
+	ORDER BY
+		a.Title ASC
+;
+
+DROP VIEW IF EXISTS VwCategory;
+CREATE VIEW VwCategory AS
+	SELECT
+		c.CategoryId,
+		c.IdentityId,
+		c.Title,
+		c.DisplayName,
+		c.Description,
+		c.LkFlowId,
+		l.Title AS LkFlowTitle,
+		l.Rate AS LkFlowRate,
+		c.Enabled,
+		c.Created,
+		c.Updated,
+		(
+			SELECT SUM(aa.AmountValue * lls.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+			JOIN LkFlow llc ON c.LkFlowId = llc.LkFlowId
+            JOIN Subcategory ss ON c.CategoryId = ss.CategoryId
+            JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+			WHERE tt.CategoryId = c.CategoryId
+			AND MONTH(tt.TransactionDate) = MONTH(curdate())
+		) AS ThisMonth
+	FROM
+		Category c
+	JOIN
+		LkFlow l
+		ON c.LkFlowId = l.LkFlowId
+;
+
+DROP VIEW IF EXISTS VwSubcategoryShort;
+CREATE VIEW VwSubcategoryShort AS
+	SELECT
+		s.SubcategoryId,
+        s.IdentityId,
+		s.CategoryId,
+        s.Title,
+        s.DisplayName,
+        s.Description,
+        s.LkFlowId,
+        s.OverrideLkFlowId,
+        s.Enabled,
+        s.Created,
+        s.CreatedBy,
+        s.Updated,
+        s.UpdatedBy,
+        (
+			SELECT SUM(aa.AmountValue * lls.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+            JOIN LkFlow lls ON s.LkFlowId = lls.LkFlowId
+			WHERE tt.CategoryId = s.SubcategoryId
+			AND MONTH(tt.TransactionDate) = MONTH(curdate())
+		) AS ThisMonth
+	FROM
+		Subcategory s
+	JOIN
+		Category c
+        ON s.CategoryId = c.CategoryId
+	WHERE
+		s.Deleted = 0
+;
+
+DROP VIEW IF EXISTS VwSubcategoryLong;
+CREATE VIEW VwSubcategoryLong AS
+	SELECT
+		s.SubcategoryId,
+        s.IdentityId,
+		s.CategoryId,
+        s.Title,
+        s.DisplayName,
+        s.Description,
+        s.LkFlowId,
+        s.OverrideLkFlowId,
+        s.Enabled,
+        s.Created,
+        s.CreatedBy,
+        s.Updated,
+        s.UpdatedBy,
+        
+		c.Title AS CategoryTitle,
+        c.DisplayName AS CategoryDisplayName,
+        c.Description AS CategoryDescription,
+        c.LkFlowId AS CategoryLkFlowId,
+        c.Enabled AS CategoryEnabled,
+        c.Created AS CategoryCreated,
+        c.CreatedBy AS CategoryCreatedBy,
+        c.Updated AS CategoryUpdated,
+        c.UpdatedBy AS CategoryUpdatedBy,
+        
+		ls.Title AS LkFlowTitle,
+        ls.Rate AS LkFlowRate,
+        
+        (
+			SELECT SUM(aa.AmountValue * lls.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+            JOIN LkFlow lls ON s.LkFlowId = lls.LkFlowId
+			WHERE tt.CategoryId = s.SubcategoryId
+			AND MONTH(tt.TransactionDate) = MONTH(curdate())
+		) AS ThisMonth
+	FROM
+		Subcategory s
+	JOIN
+		Category c
+        ON s.CategoryId = c.CategoryId
+	JOIN
+		LkFlow lc
+        ON c.LkFlowId = lc.LkFlowId
+	JOIN 
+		LkFlow ls
+		ON s.OverrideLkFlowId = ls.LkFlowId
+	WHERE
+		s.Deleted = 0
+;
+
+DROP VIEW IF EXISTS VwTransaction;
+CREATE VIEW VwTransaction AS
+	SELECT
+		t.TransactionId,
+        t.IdentityId,
+        t.TransactionDate,
+		t.AmountId,
+        t.AccountId,
+        t.LocationId,
+        t.CategoryId,
+        t.SubcategoryId,
+        t.Description,
+        t.Enabled,
+        t.Created,
+        t.Updated,
+        SUM(am.AmountValue * ls.Rate)
+			OVER (PARTITION BY t.AccountId ORDER BY t.TransactionDate, t.TransactionId DESC) AS Balance,
+		IF(t.TransactionDate > curdate(), 1, 0) AS Future,
+        a.Title AS AccountTitle,
+        a.DisplayName AS AccountDisplayName,
+        a.LkAccountTypeId,
+        la.Title AS LkAccountTypeTitle,
+        am.AmountValue,
+        am.Description AS AmountDescription,
+        l.Title AS LocationTitle,
+        l.DisplayName AS LocationDisplayName,
+		c.Title AS CategoryTitle,
+        c.DisplayName AS CategoryDisplayName,
+		c.LkFlowId AS CategoryLkFlowId,
+		s.Title AS SubcategoryTitle,
+        s.DisplayName AS SubcategoryDisplayName,
+		s.LkFlowId AS SubcategoryLkFlowId,
+		ls.Title AS LkFlowTitle,
+        ls.Rate AS LkFlowRate,
+        s.OverrideLkFlowId
+	FROM 
+		Transaction t
+	LEFT JOIN
+		Amount am
+        ON am.AmountId = t.AmountId
+	LEFT JOIN 
+		Account a 
+        ON t.AccountId = a.AccountId
+	LEFT JOIN
+		LkAccountType la
+        ON a.LkAccountTypeId = la.LkAccountTypeId
+	LEFT JOIN 
+		Location l 
+        ON t.LocationId = l.LocationId
+	LEFT JOIN 
+		Category c 
+        ON t.CategoryId = c.CategoryId
+	LEFT JOIN 
+		Subcategory s 
+        ON t.SubcategoryId = s.SubcategoryId
+	LEFT JOIN 
+		LkFlow lc
+        ON c.LkFlowId = lc.LkFlowId
+	LEFT JOIN
+		LkFlow ls
+        ON s.LkFlowId = ls.LkFlowId
+	WHERE
+		t.Enabled = 1
+	ORDER BY
+		t.TransactionDate DESC
+;
+
+DROP VIEW IF EXISTS VwAssociationInvite;
+CREATE VIEW VwAssociationInvite AS
+	SELECT
+		a.AssociationId AS aAssociationId,
+		a.IdentityId AS aIdentityId,
+		a.Title AS aTitle,
+		a.DisplayName AS aDisplayName,
+		a.Description AS aDescription,
+		a.Created AS aCreated,
+		a.Updated AS aUpdated,
+
+        ai.AssociationInviteId AS aiAssociationInviteId,
+        ai.AssociationId AS aiAssociationId,
+		ai.SenderIdentityId AS aiSenderIdentityId,
+        ai.ReceiverIdentityId AS aiReceiverIdentityId,
+		ai.Message AS aiMessage,
+		ai.Accepted AS aiAccepted,
+		ai.Created AS aiCreated,
+		ai.Updated AS aiUpdated,
+    
+		ups.UserProfileId AS upsUserProfileId,
+		ups.IdentityId AS upsIdentityId,
+		ups.ActiveId AS upsActiveId,
+		ups.Email AS upsEmail,
+		ups.Username AS upsUsername,
+		ups.Description AS upsDescription,
+		ups.Created AS upsCreated,
+		ups.Updated AS upsUpdated,
+        
+        upr.UserProfileId AS uprUserProfileId,
+		upr.IdentityId AS uprIdentityId,
+		upr.ActiveId AS uprActiveId,
+		upr.Email AS uprEmail,
+		upr.Username AS uprUsername,
+		upr.Description AS uprDescription,
+		upr.Created AS uprCreated,
+		upr.Updated AS uprUpdated
+	FROM
+		Association a
+	JOIN
+		AssociationInvite ai
+        ON a.AssociationId = ai.AssociationId
+	JOIN
+		UserProfile ups
+        ON ai.SenderIdentityId = ups.IdentityId
+	JOIN
+		UserProfile upr
+        ON ai.ReceiverIdentityId = upr.Identityid
+;
+
+DROP VIEW IF EXISTS VwPreset;
+CREATE VIEW VwPreset AS
+	SELECT
+		p.PresetId,
+		p.IdentityId,
+		p.Title,
+		p.DisplayName,
+		p.AmountValue,
+		p.AccountId,
+		a.DisplayName AS AccountDisplayName,
+		p.LocationId,
+		l.DisplayName AS LocationDisplayName,
+		p.CategoryId,
+		c.DisplayName AS CategoryDisplayName,
+		p.SubcategoryId,
+		s.DisplayName AS SubcategoryDisplayName,
+		p.Description,
+		p.Enabled,
+		p.Created,
+		p.CreatedBy,
+		CONCAT(pc.FirstName, " ", pc.LastName) AS CreatedByName,
+		p.Updated,
+		p.UpdatedBy,
+		CONCAT(pu.FirstName, " ", pu.LastName) AS UpdatedByName
+	FROM
+		Preset p
+	JOIN
+		Account a
+		ON p.AccountId = a.AccountId
+	JOIN
+		Location l
+		ON p.LocationId = l.LocationId
+	JOIN
+		Category c
+		ON p.CategoryId = c.CategoryId
+	JOIN
+		Subcategory s
+		ON p.SubcategoryId = s.SubcategoryId
+	JOIN
+		Person pc
+		ON p.CreatedBy = pc.IdentityId
+	JOIN
+		Person pu
+		ON p.UpdatedBy = pu.IdentityId
+			;
+;
+
+DROP VIEW IF EXISTS VwLocation;
+CREATE VIEW VwLocation AS
+	SELECT
+		l.LocationId,
+		l.IdentityId,
+		l.Title,
+		l.DisplayName,
+		l.Description,
+		l.Enabled,
+		l.Created,
+		l.Updated,
+		(
+			SELECT SUM(aa.AmountValue * ll.Rate)
+			FROM Transaction tt
+			JOIN Amount aa ON tt.AmountId = aa.AmountId
+			JOIN Category cc ON tt.CategoryId = cc.CategoryId
+			JOIN LkFlow ll ON cc.LkFlowId = ll.LkFlowId
+            JOIN Subcategory ss ON cc.CategoryId = ss.CategoryId
+			JOIN LkFlow lls ON ss.LkFlowId = lls.LkFlowId
+			WHERE tt.LocationId = l.LocationId
+			AND MONTH(tt.TransactionDate) = MONTH(curdate())
+		) AS ThisMonth
+	FROM
+		Location l
+;
+
+/*
+DROP VIEW IF EXISTS xxx;
+CREATE VIEW xxx AS
+
+;
+*/
