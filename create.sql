@@ -1,0 +1,898 @@
+-- DROP DATABASE IF EXISTS STARCASH0001;
+-- CREATE DATABASE STARCASH0001;
+USE STARCASHprod0002;
+ 
+SET FOREIGN_KEY_CHECKS = 0;
+
+/*
+DROP TABLE IF EXISTS xxx;
+CREATE TABLE xxx (
+	xxx INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (xxx)
+);
+*/
+
+DROP TABLE IF EXISTS Identity;
+CREATE TABLE Identity (
+	IdentityId CHAR(36) NOT NULL UNIQUE,
+    Description VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (IdentityId)
+);
+
+DROP TABLE IF EXISTS IdentityNote;
+CREATE TABLE IdentityNote (
+	IdentityNoteId INT NOT NULL AUTO_INCREMENT,
+	IdentityId CHAR(36),
+    Note VARCHAR(255),
+    PRIMARY KEY (IdentityNoteId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+
+DROP TABLE IF EXISTS UserProfile;
+CREATE TABLE UserProfile (
+	UserProfileId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    ActiveId CHAR(36),
+    Email VARCHAR(100),
+    Username VARCHAR(35),
+    Description VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (UserProfileId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (ActiveId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS UserProfileNote;
+CREATE TABLE UserProfileNote (
+	UserProfileNoteId INT NOT NULL AUTO_INCREMENT,
+	UserProfileId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (UserProfileNoteId),
+    FOREIGN KEY (UserProfileId) REFERENCES UserProfile (UserProfileId)
+);
+DROP TABLE IF EXISTS UserProfileLog;
+CREATE TABLE UserProfileLog (
+	UserProfileLogId INT NOT NULL AUTO_INCREMENT,
+	UserProfileId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (UserProfileLogId),
+    FOREIGN KEY (UserProfileId) REFERENCES UserProfile (UserProfileId)
+);
+
+DROP TABLE IF EXISTS Association;
+CREATE TABLE Association (
+	AssociationId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36) NOT NULL,
+    Title VARCHAR(100),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssociationId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS AssociationNote;
+CREATE TABLE AssociationNote (
+	AssociationNoteId INT NOT NULL AUTO_INCREMENT,
+	AssociationId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AssociationNoteId),
+    FOREIGN KEY (AssociationId) REFERENCES Association (AssociationId)
+);
+DROP TABLE IF EXISTS AssociationLog;
+CREATE TABLE AssociationLog (
+	AssociationLogId INT NOT NULL AUTO_INCREMENT,
+	AssociationId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AssociationLogId),
+    FOREIGN KEY (AssociationId) REFERENCES Association (AssociationId)
+);
+
+DROP TABLE IF EXISTS AssociationMember;
+CREATE TABLE AssociationMember (
+	AssociationMemberId INT NOT NULL AUTO_INCREMENT,
+    AssociationId INT NOT NULL,
+    IdentityId CHAR(36) NOT NULL,
+    CanRead BOOL NOT NULL DEFAULT 1,
+    CanUpdate BOOL NOT NULL DEFAULT 0,
+    CanCreate BOOL NOT NULL DEFAULT 0,
+    CanDelete BOOL NOT NULL DEFAULT 0,
+    CanInvite BOOL NOT NULL DEFAULT 0,
+    CanRemove BOOL NOT NULL DEFAULT 0,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssociationMemberId),
+    FOREIGN KEY (AssociationId) REFERENCES Association (AssociationId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS AssociationMemberNote;
+CREATE TABLE AssociationMemberNote (
+	AssociationMemberNoteId INT NOT NULL AUTO_INCREMENT,
+	AssociationMemberId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AssociationMemberNoteId),
+    FOREIGN KEY (AssociationMemberId) REFERENCES AssociationMember (AssociationMemberId)
+);
+DROP TABLE IF EXISTS AssociationMemberLog;
+CREATE TABLE AssociationMemberLog (
+	AssociationMemberLogId INT NOT NULL AUTO_INCREMENT,
+	AssociationMemberId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AssociationMemberLogId),
+    FOREIGN KEY (AssociationMemberId) REFERENCES AssociationMember (AssociationMemberId)
+);
+
+DROP TABLE IF EXISTS AssociationInvite;
+CREATE TABLE AssociationInvite (
+	AssociationInviteId INT NOT NULL AUTO_INCREMENT,
+	AssociationId INT,
+    SenderIdentityId CHAR(36),
+    ReceiverIdentityId CHAR(36),
+    Message VARCHAR(255),
+    Accepted BOOL NOT NULL DEFAULT 0,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssociationInviteId),
+    FOREIGN KEY (AssociationId) REFERENCES Association (AssociationId),
+    FOREIGN KEY (SenderIdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (ReceiverIdentityId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS AssociationInviteNote;
+CREATE TABLE AssociationInviteNote (
+	AssociationInviteNoteId INT NOT NULL AUTO_INCREMENT,
+	AssociationInviteId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AssociationInviteNoteId),
+    FOREIGN KEY (AssociationInviteId) REFERENCES AssociationInvite (AssociationInviteId)
+);
+DROP TABLE IF EXISTS AssociationInviteLog;
+CREATE TABLE AssociationInviteLog (
+	AssociationInviteLogId INT NOT NULL AUTO_INCREMENT,
+	AssociationInviteId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AssociationInviteLogId),
+    FOREIGN KEY (AssociationInviteId) REFERENCES AssociationInvite (AssociationInviteId)
+);
+
+DROP TABLE IF EXISTS AssociationMessage;
+CREATE TABLE AssociationMessage (
+	AssociationMessageId INT NOT NULL AUTO_INCREMENT,
+    AssociationId INT,
+    AuthorIdentityId CHAR(36),
+    Message VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssociationMessageId),
+    FOREIGN KEY (AssociationId) REFERENCES Association (AssociationId),
+    FOREIGN KEY (AuthorIdentityId) REFERENCES Identity (IdentityId)
+);
+
+DROP TABLE IF EXISTS AssociationMessageReply;
+CREATE TABLE AssociationMessageReply (
+	AssociationMessageReplyId INT NOT NULL AUTO_INCREMENT,
+    AssociationMessageId INT,
+    AuthorIdentityId CHAR(36),
+    Message VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AssociationMessageReplyId),
+    FOREIGN KEY (AssociationMessageId) REFERENCES AssociationMessage (AssociationMessageId),
+    FOREIGN KEY (AuthorIdentityId) REFERENCES Identity (IdentityId)
+);
+
+DROP TABLE IF EXISTS Person;
+CREATE TABLE Person (
+    PersonId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    FirstName VARCHAR(25),
+    LastName VARCHAR(25),
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (PersonId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS PersonNote;
+CREATE TABLE PersonNote (
+	PersonNoteId INT NOT NULL AUTO_INCREMENT,
+	PersonId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (PersonNoteId),
+    FOREIGN KEY (PersonId) REFERENCES Person (PersonId)
+);
+DROP TABLE IF EXISTS PersonLog;
+CREATE TABLE PersonLog (
+	PersonLogId INT NOT NULL AUTO_INCREMENT,
+	PersonId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (PersonLogId),
+    FOREIGN KEY (PersonId) REFERENCES Person (PersonId)
+);
+
+DROP TABLE IF EXISTS LkState;
+CREATE TABLE LkState (
+	LkStateId INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(35),
+    DisplayName VARCHAR(2),
+    PRIMARY KEY (LkStateId)
+);
+INSERT INTO LkState
+	(Title, DisplayName)
+	VALUES
+	('Alabama', 'AL'),
+	('Alaska', 'AK'),
+	('Arizona', 'AZ'),
+	('Arkansas', 'AR'),
+	('California', 'CA'),
+	('Colorado', 'CO'),
+	('Connecticut', 'CT'),
+	('Delaware', 'DE'),
+	('District of Columbia', 'DC'),
+	('Florida', 'FL'),
+	('Georgia', 'GA'),
+	('Hawaii', 'HI'),
+	('Idaho', 'ID'),
+	('Illinois', 'IL'),
+	('Indiana', 'IN'),
+	('Iowa', 'IA'),
+	('Kansas', 'KS'),
+	('Kentucky', 'KY'),
+	('Louisiana', 'LA'),
+	('Maine', 'ME'),
+	('Maryland', 'MD'),
+	('Massachusetts', 'MA'),
+	('Michigan', 'MI'),
+	('Minnesota', 'MN'),
+	('Mississippi', 'MS'),
+	('Missouri', 'MO'),
+	('Montana', 'MT'),
+	('Nebraska', 'NE'),
+	('Nevada', 'NV'),
+	('New Hampshire', 'NH'),
+	('New Jersey', 'NJ'),
+	('New Mexico', 'NM'),
+	('New York', 'NY'),
+	('North Carolina', 'NC'),
+	('North Dakota', 'ND'),
+	('Ohio', 'OH'),
+	('Oklahoma', 'OK'),
+	('Oregon', 'OR'),
+	('Pennsylvania', 'PA'),
+	('Rhode Island', 'RI'),
+	('South Carolina', 'SC'),
+	('South Dakota', 'SD'),
+	('Tennessee', 'TN'),
+	('Texas', 'TX'),
+	('Utah', 'UT'),
+	('Vermont', 'VT'),
+	('Virginia', 'VA'),
+	('WRecipeashington', 'WA'),
+	('West Virginia', 'WV'),
+	('Wisconsin', 'WI'),
+	('Wyoming', 'WY')
+;
+
+DROP TABLE IF EXISTS Address;
+CREATE TABLE Address (
+	AddressId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    LineOne VARCHAR(50),
+    LineTwo VARCHAR(50),
+    City VARCHAR(35),
+    LkStateId INT,
+    ZipCode VARCHAR(10),
+    Country VARCHAR(55),
+    Description VARCHAR(255),
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AddressId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (LkStateId) REFERENCES LkState (LkStateId)
+);
+DROP TABLE IF EXISTS AddressNote;
+CREATE TABLE AddressNote (
+	AddressNoteId INT NOT NULL AUTO_INCREMENT,
+	AddressId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AddressNoteId),
+    FOREIGN KEY (AddressId) REFERENCES Address (AddressId)
+);
+DROP TABLE IF EXISTS AddressLog;
+CREATE TABLE AddressLog (
+	AddressLogId INT NOT NULL AUTO_INCREMENT,
+	AddressId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AddressLogId),
+    FOREIGN KEY (AddressId) REFERENCES Address (AddressId)
+);
+
+DROP TABLE IF EXISTS LkPhoneType;
+CREATE TABLE LkPhoneType (
+	LkPhoneTypeId INT NOT NULL AUTO_INCREMENT,
+	Title VARCHAR(10),
+    PRIMARY KEY (LkPhoneTypeId)
+);
+INSERT INTO LkPhoneType
+	(LkPhoneTypeId, Title)
+VALUES
+    (1, "Mobile"),
+	(2, "Home"),
+    (3, "Work")
+; 
+
+DROP TABLE IF EXISTS Phone;
+CREATE TABLE Phone (
+	PhoneId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    PhoneNumber VARCHAR(15),
+    LkPhoneTypeId INT,
+    Enabled BOOL NOT NULL DEFAULT 1,
+    Description VARCHAR(255),
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (PhoneId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (LkPhoneTypeId) REFERENCES LkPhoneType (LkPhoneTypeId)
+);
+DROP TABLE IF EXISTS PhoneNote;
+CREATE TABLE PhoneNote (
+	PhoneNoteId INT NOT NULL AUTO_INCREMENT,
+	PhoneId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (PhoneNoteId),
+    FOREIGN KEY (PhoneId) REFERENCES Phone (PhoneId)
+);
+DROP TABLE IF EXISTS PhoneLog;
+CREATE TABLE PhoneLog (
+	PhoneLogId INT NOT NULL AUTO_INCREMENT,
+	PhoneId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (PhoneLogId),
+    FOREIGN KEY (PhoneId) REFERENCES Phone (PhoneId)
+);
+
+DROP TABLE IF EXISTS Amount;
+CREATE TABLE Amount (
+    AmountId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    AmountValue DECIMAL(13,2),
+    Description VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (AmountId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS AmountNote;
+CREATE TABLE AmountNote (
+	AmountNoteId INT NOT NULL AUTO_INCREMENT,
+	AmountId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AmountNoteId),
+    FOREIGN KEY (AmountId) REFERENCES Amount (AmountId)
+);
+DROP TABLE IF EXISTS AmountLog;
+CREATE TABLE AmountLog (
+	AmountLogId INT NOT NULL AUTO_INCREMENT,
+	AmountId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AmountLogId),
+    FOREIGN KEY (AmountId) REFERENCES Amount (AmountId)
+);
+
+DROP TABLE IF EXISTS LkAccountType;
+CREATE TABLE LkAccountType (
+    LkAccountTypeId INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(50),
+    PRIMARY KEY (LkAccountTypeId)
+);
+INSERT INTO LkAccountType
+	(Title)
+VALUES
+	('Checking'),
+    ('Saving'),
+    ('Credit Card'),
+    ('Loan'),
+    ('Finance')
+;
+
+DROP TABLE IF EXISTS Account;
+CREATE TABLE Account (
+    AccountId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    Title VARCHAR(50),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    AmountId INT,
+    StartDate DATE,
+    ReconcileDate DATE,
+    LkAccountTypeId INT,
+    Track BOOL NOT NULL DEFAULT 1,
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBy CHAR(36),
+    PRIMARY KEY (AccountId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (AmountId) REFERENCES Amount (AmountId),
+    FOREIGN KEY (LkAccountTypeId) REFERENCES LkAccountType (LkAccountTypeId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS AccountNote;
+CREATE TABLE AccountNote (
+	AccountNoteId INT NOT NULL AUTO_INCREMENT,
+	AccountId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (AccountNoteId),
+    FOREIGN KEY (AccountId) REFERENCES Account (AccountId)
+);
+DROP TABLE IF EXISTS AccountLog;
+CREATE TABLE AccountLog (
+	AccountLogId INT NOT NULL AUTO_INCREMENT,
+	AccountId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (AccountLogId),
+    FOREIGN KEY (AccountId) REFERENCES Account (AccountId)
+);
+
+DROP TABLE IF EXISTS CreditLimit;
+CREATE TABLE CreditLimit (
+	CreditLimitId INT NOT NULL AUTO_INCREMENT,
+    AccountId INT,
+    Description VARCHAR(255),
+    AmountId INT,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (CreditLimitId),
+    FOREIGN KEY (AccountId) REFERENCES Account (AccountId),
+    FOREIGN KEY (AmountId) REFERENCES Amount (AmountId)
+);
+DROP TABLE IF EXISTS CreditLimitNote;
+CREATE TABLE CreditLimitNote (
+	CreditLimitNoteId INT NOT NULL AUTO_INCREMENT,
+	CreditLimitId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (CreditLimitNoteId),
+    FOREIGN KEY (CreditLimitId) REFERENCES CreditLimit (CreditLimitId)
+);
+DROP TABLE IF EXISTS CreditLimitLog;
+CREATE TABLE CreditLimitLog (
+	CreditLimitLogId INT NOT NULL AUTO_INCREMENT,
+	CreditLimitId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (CreditLimitLogId),
+    FOREIGN KEY (CreditLimitId) REFERENCES CreditLimit (CreditLimitId)
+);
+
+DROP TABLE IF EXISTS LkFlow;
+CREATE TABLE LkFlow (
+	LkFlowId INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(6),
+    Rate INT,
+    PRIMARY KEY (LkFlowId)
+);
+INSERT INTO LkFlow
+	(Title, Rate)
+VALUES 
+	('Credit', 1),
+	('Debit', -1)
+;
+
+DROP TABLE IF EXISTS Category;
+CREATE TABLE Category (
+	CategoryId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    Title VARCHAR(50),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    LkFlowId INT,
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBY CHAR(36),
+    PRIMARY KEY (CategoryId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (LkFlowId) REFERENCES LkFlow (LkFlowId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+ALTER TABLE Category AUTO_INCREMENT = 100;
+INSERT INTO Category
+	(CategoryId, Title, DisplayName, Description, LkFlowId)
+	VALUES
+	(1, 'New Asset Account Setup', 'New Asset Account', 'Insert asset account starting balance into Transaction', 1),
+    (2, 'New Liability Account Setup', 'New Liability Account', 'Insert asset account starting balance into Transaction', 2),
+    (3, 'Modify Transaction: System Category', 'Modify Transaction', 'System category for modifying transaction: CategoryId', 2);
+
+DROP TABLE IF EXISTS CategoryNote;
+CREATE TABLE CategoryNote (
+	CategoryNoteId INT NOT NULL AUTO_INCREMENT,
+	CategoryId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (CategoryNoteId),
+    FOREIGN KEY (CategoryId) REFERENCES Category (CategoryId)
+);
+DROP TABLE IF EXISTS CategoryLog;
+CREATE TABLE CategoryLog (
+	CategoryLogId INT NOT NULL AUTO_INCREMENT,
+	CategoryId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (CategoryLogId),
+    FOREIGN KEY (CategoryId) REFERENCES Category (CategoryId)
+);
+
+DROP TABLE IF EXISTS Subcategory;
+CREATE TABLE Subcategory (
+	SubcategoryId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    CategoryId INT NOT NULL,
+    Title VARCHAR(50),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    LkFlowId INT NOT NULL,
+    OverrideLkFlowId BOOL NOT NULL DEFAULT 0,
+    Enabled BOOL NOT NULL DEFAULT 1,
+    Deleted INT NOT NULL DEFAULT 0,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBy CHAR(36),
+    PRIMARY KEY (SubcategoryId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (CategoryId) REFERENCES Category (CategoryId),
+    FOREIGN KEY (LkFlowId) REFERENCES LkFlow (LkFlowId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+-- Allow for system subcategories
+ALTER TABLE Subcategory AUTO_INCREMENT = 100;
+-- Add Deleted column to Subcategory
+-- Add Subcategory override category flow
+-- Add lkflow override
+INSERT INTO Subcategory
+	(SubcategoryId, CategoryId, Title, DisplayName, Description, LkFlowId)
+	VALUES
+    (1, 1, "Checking Account", "Checking", "Insert account starting balance", 1),
+    (2, 1, "Savings Account", "Savings", "Insert account starting balance", 1),
+    (3, 2, "Credit Card Account", "Credit Card", "Insert account starting balance", 2),
+    (4, 2, "Loan Account", "Loan", "Insert account starting balance", 2),
+    (5, 2, "Finance Account", "Finance", "Insert account starting balance", 2);
+DROP TABLE IF EXISTS SubcategoryNote;
+CREATE TABLE SubcategoryNote (
+	SubcategoryNoteId INT NOT NULL AUTO_INCREMENT,
+	SubcategoryId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (SubcategoryNoteId),
+    FOREIGN KEY (SubcategoryId) REFERENCES Subcategory (SubcategoryId)
+);
+DROP TABLE IF EXISTS SubcategoryLog;
+CREATE TABLE SubcategoryLog (
+	SubcategoryLogId INT NOT NULL AUTO_INCREMENT,
+	SubcategoryId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (SubcategoryLogId),
+    FOREIGN KEY (SubcategoryId) REFERENCES Subcategory (SubcategoryId)
+);
+
+DROP TABLE IF EXISTS Location;
+CREATE TABLE Location (
+	LocationId INT NOT NULL AUTO_INCREMENT,
+	IdentityId CHAR(36),
+    Title VARCHAR(50),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBy CHAR(36),
+    PRIMARY KEY (LocationId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+ALTER TABLE Subcategory AUTO_INCREMENT = 100;
+INSERT INTO Location
+	(LocationId, Title, DisplayName, Description)
+    VALUES
+    (
+		1,
+		"System",
+        "Sys",
+        "System location for creating new accounts"
+	);
+DROP TABLE IF EXISTS LocationNote;
+CREATE TABLE LocationNote (
+	LocationNoteId INT NOT NULL AUTO_INCREMENT,
+	LocationId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (LocationNoteId),
+    FOREIGN KEY (LocationId) REFERENCES Location (LocationId)
+);
+DROP TABLE IF EXISTS LocationLog;
+CREATE TABLE LocationLog (
+	LocationLogId INT NOT NULL AUTO_INCREMENT,
+	LocationId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (LocationLogId),
+    FOREIGN KEY (LocationId) REFERENCES Location (LocationId)
+);
+
+DROP TABLE IF EXISTS Transaction;
+CREATE TABLE Transaction (
+	TransactionId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    TransactionDate DATE,
+    AmountId INT,
+    AccountId INT,
+    LocationId INT,
+    CategoryId INT,
+    SubcategoryId INT,
+    Description VARCHAR(255),
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBy CHAR(36),
+    PRIMARY KEY (TransactionId),
+    FOREIGN KEY (IdentityId) REFERENCES  Identity (IdentityId),
+    FOREIGN KEY (AmountId) REFERENCES Amount (AmountId),
+    FOREIGN KEY (AccountId) REFERENCES Account (AccountId),
+    FOREIGN KEY (LocationId) REFERENCES Location (LocationId),
+    FOREIGN KEY (CategoryId) REFERENCES Category (CategoryId),
+    FOREIGN KEY (SubcategoryId) REFERENCES Subcategory (SubcategoryId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS TransactionNote;
+CREATE TABLE TransactionNote (
+	TransactionNoteId INT NOT NULL AUTO_INCREMENT,
+	TransactionId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (TransactionNoteId),
+    FOREIGN KEY (TransactionId) REFERENCES Transaction (TransactionId)
+);
+DROP TABLE IF EXISTS TransactionLog;
+CREATE TABLE TransactionLog (
+	TransactionLogId INT NOT NULL AUTO_INCREMENT,
+	TransactionId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (TransactionLogId),
+    FOREIGN KEY (TransactionId) REFERENCES Transaction (TransactionId)
+);
+
+DROP TABLE IF EXISTS Preset;
+CREATE TABLE Preset (
+	PresetId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    Title VARCHAR(50),
+    DisplayName VARCHAR(25),
+	AmountValue DECIMAL(13,2),
+    AccountId INT,
+    LocationId INT,
+    CategoryId INT,
+    SubcategoryId INT,
+    Description VARCHAR(255),
+    Enabled BOOL NOT NULL DEFAULT 1,
+	Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CreatedBy CHAR(36),
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UpdatedBy CHAR(36),
+    PRIMARY KEY (PresetId),
+    FOREIGN KEY (IdentityId) REFERENCES  Identity (IdentityId),
+    FOREIGN KEY (AccountId) REFERENCES Account (AccountId),
+    FOREIGN KEY (LocationId) REFERENCES Location (LocationId),
+    FOREIGN KEY (CategoryId) REFERENCES Category (CategoryId),
+    FOREIGN KEY (SubcategoryId) REFERENCES Subcategory (SubcategoryId),
+    FOREIGN KEY (CreatedBy) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (UpdatedBy) REFERENCES Identity (IdentityId)
+);
+DROP TABLE IF EXISTS PresetNote;
+CREATE TABLE PresetNote (
+	PresetNoteId INT NOT NULL AUTO_INCREMENT,
+	PresetId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (PresetNoteId),
+    FOREIGN KEY (PresetId) REFERENCES Preset (PresetId)
+);
+DROP TABLE IF EXISTS PresetLog;
+CREATE TABLE PresetLog (
+	PresetLogId INT NOT NULL AUTO_INCREMENT,
+	PresetId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (PresetLogId),
+    FOREIGN KEY (PresetId) REFERENCES Preset (PresetId)
+);
+
+-- Preset Group: Groups of presets
+DROP TABLE IF EXISTS PresetGroup;
+CREATE TABLE PresetGroup (
+	PresetGroupId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36) NOT NULL,
+    Title VARCHAR(100),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (PresetGroupId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+-- Preset Group Preset: Many to many preset and group
+DROP TABLE IF EXISTS PresetGroupPreset;
+CREATE TABLE PresetGroupPreset (
+	PresetGroupPresetId INT NOT NULL AUTO_INCREMENT,
+    PresetGroupId INT NOT NULL,
+    PresetId INT NOT NULL,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (PresetGroupPresetId),
+    FOREIGN KEY (PresetGroupId) REFERENCES PresetGroup (PresetGroupId),
+    FOREIGN KEY (PresetId) REFERENCES Preset (PresetId)
+);
+
+-- New tables
+-- Time Period: Select interval for recurring 
+DROP TABLE IF EXISTS TimePeriod;
+CREATE TABLE TimePeriod (
+	TimePeriodId INT NOT NULL AUTO_INCREMENT,
+    Title VARCHAR(25),
+    DisplayName VARCHAR(5),
+    PRIMARY KEY (TimePeriodId)
+);
+INSERT INTO TimePeriod
+	(TimePeriodId, Title, DisplayName)
+    VALUES
+    (1, "Day", "D"),
+	(2, "Week", "W"),
+    (3, "Month", "M"),
+    (4, "Quarter", "Q"),
+    (5, "Year", "Y");
+-- Recurring: Recurring transactions with time period (interval)
+DROP TABLE IF EXISTS Recurring;
+CREATE TABLE Recurring (
+	RecurringId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36),
+    Title VARCHAR(100),
+    DisplayName VARCHAR(25),
+    Description VARCHAR(255),
+    AmountId INT,
+    DueDay INT,
+    Repetition INT,
+    TimePeriodId INT,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (RecurringId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId),
+    FOREIGN KEY (TimePeriodId) REFERENCES TimePeriod (TimePeriodId)
+);
+DROP TABLE IF EXISTS RecurringNote;
+CREATE TABLE RecurringNote (
+	RecurringNoteId INT NOT NULL AUTO_INCREMENT,
+	RecurringId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (RecurringNoteId),
+    FOREIGN KEY (RecurringId) REFERENCES Recurring (RecurringId)
+);
+DROP TABLE IF EXISTS RecurringLog;
+CREATE TABLE RecurringLog (
+	RecurringLogId INT NOT NULL AUTO_INCREMENT,
+	RecurringId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (RecurringLogId),
+    FOREIGN KEY (RecurringId) REFERENCES Recurring (RecurringId)
+);
+
+-- Recurring Preset: Associiate preset with recurring
+DROP TABLE IF EXISTS RecurringPreset;
+CREATE TABLE RecurringPreset (
+	RecurringPresetId INT NOT NULL AUTO_INCREMENT,
+    RecurringId INT NOT NULL,
+    PresetId INT NOT NULL,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (RecurringPresetId),
+    FOREIGN KEY (RecurringId) REFERENCES Recurring (RecurringId),
+    FOREIGN KEY (PresetId) REFERENCES Preset (PresetId)
+);
+DROP TABLE IF EXISTS RecurringPresetNote;
+CREATE TABLE RecurringPresetNote (
+	RecurringPresetNoteId INT NOT NULL AUTO_INCREMENT,
+	RecurringPresetId INT,
+    Note VARCHAR(255),
+    PRIMARY KEY (RecurringPresetNoteId),
+    FOREIGN KEY (RecurringPresetId) REFERENCES RecurringPreset (RecurringPresetId)
+);
+DROP TABLE IF EXISTS RecurringPresetLog;
+CREATE TABLE RecurringPresetLog (
+	RecurringPresetLogId INT NOT NULL AUTO_INCREMENT,
+	RecurringPresetId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (RecurringPresetLogId),
+    FOREIGN KEY (RecurringPresetId) REFERENCES RecurringPreset (RecurringPresetId)
+);
+
+-- Recurring preset group: Association preset group to recurring
+DROP TABLE IF EXISTS RecurringPresetGroup;
+CREATE TABLE RecurringPresetGroup (
+	RecurringPresetGroupId INT NOT NULL AUTO_INCREMENT,
+    RecurringId INT NOT NULL,
+    PresetGroupId INT NOT NULL,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (RecurringPresetGroupId),
+    FOREIGN KEY (RecurringId) REFERENCES Recurring (RecurringId),
+    FOREIGN KEY (PresetGroupId) REFERENCES PresetGroup (PresetGroupId)
+);
+
+-- Default Phone: Allow user to select default phone
+DROP TABLE IF EXISTS DefaultPhone;
+CREATE TABLE DefaultPhone (
+	DefaultPhoneId INT NOT NULL AUTO_INCREMENT,
+    PhoneId INT NOT NULL,
+    PRIMARY KEY (DefaultPhoneId),
+    FOREIGN KEY (PhoneId) REFERENCES Phone (PhoneId)
+);
+DROP TABLE IF EXISTS DefaultPhoneLog;
+CREATE TABLE DefaultPhoneLog (
+	DefaultPhoneLogId INT NOT NULL AUTO_INCREMENT,
+	DefaultPhoneId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (DefaultPhoneLogId),
+    FOREIGN KEY (DefaultPhoneId) REFERENCES DefaultPhone (DefaultPhoneId)
+);
+
+-- Default Address: Allow user to select default address
+DROP TABLE IF EXISTS DefaultAddress;
+CREATE TABLE DefaultAddress (
+	DefaultAddressId INT NOT NULL AUTO_INCREMENT,
+    AddressId INT NOT NULL,
+    PRIMARY KEY (DefaultAddressId),
+    FOREIGN KEY (AddressId) REFERENCES Address (AddressId)
+);
+DROP TABLE IF EXISTS DefaultAddressLog;
+CREATE TABLE DefaultAddressLog (
+	DefaultAddressLogId INT NOT NULL AUTO_INCREMENT,
+	DefaultAddressId INT,
+    Log VARCHAR(255),
+    PRIMARY KEY (DefaultAddressLogId),
+    FOREIGN KEY (DefaultAddressId) REFERENCES DefaultAddress (DefaultAddressId)
+);
+
+DROP TABLE IF EXISTS Tag;
+CREATE TABLE Tag (
+	TagId INT NOT NULL AUTO_INCREMENT,
+    IdentityId CHAR(36) NOT NULL,
+    Title VARCHAR(25) NOT NULL,
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (TagId),
+    FOREIGN KEY (IdentityId) REFERENCES Identity (IdentityId)
+);
+
+DROP TABLE IF EXISTS TransactionTag;
+CREATE TABLE TransactionTag (
+	TransactionTagId INT NOT NULL AUTO_INCREMENT,
+    TransactionId INT NOT NULL,
+    TagId INT NOT NULL,
+    Amount DECIMAL(13,2),
+    Created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (TransactionTagId),
+    FOREIGN KEY (TransactionId) REFERENCES Transaction (TransactionId),
+    FOREIGN KEY (TagId) REFERENCES Tag (TagId)
+);
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+/*
+DROP TABLE IF EXISTS xxx;
+CREATE TABLE xxx (
+	xxx INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY (xxx)
+);
+*/
